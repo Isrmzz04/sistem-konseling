@@ -30,7 +30,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            
+
             $user = User::find(Auth::id());
             return redirect()->route($user->getDashboardRoute());
         }
@@ -54,14 +54,12 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,guru_bk,siswa'
+            'password' => 'required|string|min:6|confirmed',
+            'role' => 'required|in:administrator,guru_bk,siswa'
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
             'username' => $validated['username'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],

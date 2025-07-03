@@ -48,7 +48,7 @@ Route::middleware(['auth', 'role:administrator'])->prefix('administrator')->name
     Route::get('/settings', function() { return view('administrator.settings.index'); })->name('settings.index');
 });
 
-Route::middleware(['auth', 'role:guru_bk'])->prefix('guru-bk')->name('guru_bk.')->group(function () {
+Route::middleware(['auth', 'role:guru_bk'])->prefix('guru_bk')->name('guru_bk.')->group(function () {
     Route::get('/dashboard', [GuruBKDashboardController::class, 'index'])->name('dashboard');
     
     Route::get('/permohonan', function() { return 'Permohonan Masuk'; })->name('permohonan.index');
@@ -60,10 +60,7 @@ Route::middleware(['auth', 'role:guru_bk'])->prefix('guru-bk')->name('guru_bk.')
     
     Route::get('/laporan/create', function() { return 'Buat Laporan'; })->name('laporan.create');
     Route::get('/laporan', function() { return 'Daftar Laporan'; })->name('laporan.index');
-    
-    Route::get('/dokumentasi', function() { return 'Dokumentasi'; })->name('dokumentasi.index');
-    Route::get('/siswa', function() { return 'Data Siswa'; })->name('siswa.index');
-    Route::get('/profile', function() { return 'Profile Guru BK'; })->name('profile.index');
+        
 });
 
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
@@ -75,5 +72,4 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     Route::get('/jadwal', function() { return 'Jadwal Konseling'; })->name('jadwal.index');
     Route::get('/laporan', function() { return 'Laporan Bimbingan'; })->name('laporan.index');
     Route::get('/riwayat', function() { return 'Riwayat Konseling'; })->name('riwayat.index');
-    Route::get('/profile', function() { return 'Profile Siswa'; })->name('profile.index');
 });

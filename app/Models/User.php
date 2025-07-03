@@ -11,64 +11,36 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
         'username',
         'password',
         'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'password' => 'hashed',
     ];
 
-    /**
-     * Check if user is admin
-     */
-    public function isAdmin(): bool
+    public function isAdministrator(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'administrator';
     }
 
-    /**
-     * Check if user is guru BK
-     */
     public function isGuruBK(): bool
     {
         return $this->role === 'guru_bk';
     }
 
-    /**
-     * Check if user is siswa
-     */
     public function isSiswa(): bool
     {
         return $this->role === 'siswa';
     }
 
-    /**
-     * Get dashboard route based on role
-     */
     public function getDashboardRoute(): string
     {
         return match($this->role) {
@@ -76,6 +48,31 @@ class User extends Authenticatable
             'guru_bk' => 'guru_bk.dashboard',
             'siswa' => 'siswa.dashboard',
             default => 'home'
-        }; 
+        };
+    }
+
+    public function guruBK()
+    {
+        return $this->hasOne(GuruBK::class);
+    }
+
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
+    public function getProfile()
+    {
+        return match($this->role) {
+            'guru_bk' => $this->guruBK,
+            'siswa' => $this->siswa,
+            default => null
+        };
+    }
+
+    public function getDisplayName(): string
+    {
+        $profile = $this->getProfile();
+        return $profile ? $profile->nama_lengkap : $this->username;
     }
 }
