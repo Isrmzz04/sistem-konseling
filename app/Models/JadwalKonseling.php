@@ -1,4 +1,5 @@
 <?php
+// Pastikan di Model JadwalKonseling ada relationship ini:
 
 namespace App\Models;
 
@@ -29,27 +30,29 @@ class JadwalKonseling extends Model
         'jam_mulai' => 'datetime:H:i',
         'jam_selesai' => 'datetime:H:i',
     ];
-
+    
+    // PASTIKAN RELATIONSHIP INI ADA DAN BENAR
     public function permohonanKonseling()
     {
-        return $this->belongsTo(PermohonanKonseling::class);
+        return $this->belongsTo(PermohonanKonseling::class, 'permohonan_konseling_id');
     }
 
     public function guruBK()
     {
-        return $this->belongsTo(GuruBK::class);
+        return $this->belongsTo(GuruBK::class, 'guru_bk_id');
     }
 
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->belongsTo(Siswa::class, 'siswa_id');
     }
 
     public function laporanBimbingan()
     {
-        return $this->hasOne(LaporanBimbingan::class);
+        return $this->hasOne(LaporanBimbingan::class, 'jadwal_konseling_id');
     }
 
+    // Methods
     public function isDijadwalkan()
     {
         return $this->status === 'dijadwalkan';

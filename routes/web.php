@@ -7,6 +7,7 @@ use App\Http\Controllers\Administrator\GuruBKController;
 use App\Http\Controllers\Administrator\SiswaController;
 
 use App\Http\Controllers\GuruBK\DashboardController as GuruBKDashboardController;
+
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Models\User;
 
@@ -76,48 +77,56 @@ Route::middleware(['auth', 'role:administrator'])->prefix('administrator')->name
 Route::middleware(['auth', 'role:guru_bk'])->prefix('guru_bk')->name('guru_bk.')->group(function () {
     Route::get('/dashboard', [GuruBKDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/permohonan', function () {
-        return 'Permohonan Masuk';
-    })->name('permohonan.index');
-    Route::get('/permohonan/history', function () {
-        return 'Riwayat Permohonan';
-    })->name('permohonan.history');
+    // Permohonan routes
+    Route::prefix('permohonan')->name('permohonan.')->group(function () {
+        Route::get('/', [App\Http\Controllers\GuruBK\PermohonanKonselingController::class, 'index'])->name('index');
+        Route::get('/history', [App\Http\Controllers\GuruBK\PermohonanKonselingController::class, 'history'])->name('history');
+        Route::patch('/{permohonanKonseling}/status', [App\Http\Controllers\GuruBK\PermohonanKonselingController::class, 'updateStatus'])->name('update-status');
+    });
 
-    Route::get('/jadwal/create', function () {
-        return 'Buat Jadwal';
-    })->name('jadwal.create');
-    Route::get('/jadwal', function () {
-        return 'Jadwal Aktif';
-    })->name('jadwal.index');
-    Route::get('/jadwal/history', function () {
-        return 'Riwayat Jadwal';
-    })->name('jadwal.history');
+    // Jadwal routes - Update ini (menu Jadwal adalah single, bukan dropdown)
+    Route::prefix('jadwal')->name('jadwal.')->group(function () {
+        Route::get('/', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'store'])->name('store');
+        Route::get('/{jadwalKonseling}', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'show'])->name('show');
+        Route::get('/{jadwalKonseling}/edit', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'edit'])->name('edit');
+        Route::put('/{jadwalKonseling}', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'update'])->name('update');
+        Route::delete('/{jadwalKonseling}', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'destroy'])->name('destroy');
+        Route::patch('/{jadwalKonseling}/status', [App\Http\Controllers\GuruBK\JadwalKonselingController::class, 'updateStatus'])->name('update-status');
+    });
 
-    Route::get('/laporan/create', function () {
-        return 'Buat Laporan';
-    })->name('laporan.create');
-    Route::get('/laporan', function () {
-        return 'Daftar Laporan';
-    })->name('laporan.index');
+    // Laporan routes (belum diubah, masih single route)
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'index'])->name('index');
+        Route::get('/template', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'downloadTemplate'])->name('download-template');
+        Route::get('/create/{jadwalKonseling}', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'store'])->name('store');
+        Route::get('/{laporanBimbingan}', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'show'])->name('show');
+        Route::get('/{laporanBimbingan}/download', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'download'])->name('download');
+        Route::delete('/{laporanBimbingan}', [App\Http\Controllers\GuruBK\LaporanBimbinganController::class, 'destroy'])->name('destroy');
+    });
 });
 
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/permohonan/create', function () {
-        return 'Ajukan Permohonan';
-    })->name('permohonan.create');
-    Route::get('/permohonan', function () {
-        return 'Status Permohonan';
-    })->name('permohonan.index');
+    Route::prefix('permohonan')->name('permohonan.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'store'])->name('store');
+        Route::get('/{permohonanKonseling}', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'show'])->name('show');
+        Route::get('/{permohonanKonseling}/edit', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'edit'])->name('edit');
+        Route::put('/{permohonanKonseling}', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'update'])->name('update');
+        Route::delete('/{permohonanKonseling}', [App\Http\Controllers\Siswa\PermohonanKonselingController::class, 'destroy'])->name('destroy');
+    });
 
-    Route::get('/jadwal', function () {
-        return 'Jadwal Konseling';
-    })->name('jadwal.index');
-    Route::get('/laporan', function () {
-        return 'Laporan Bimbingan';
-    })->name('laporan.index');
-    Route::get('/riwayat', function () {
-        return 'Riwayat Konseling';
-    })->name('riwayat.index');
+    Route::get('/jadwal', [App\Http\Controllers\Siswa\JadwalKonselingController::class, 'index'])->name('jadwal.index');
+    
+    Route::get('/riwayat', [App\Http\Controllers\Siswa\JadwalKonselingController::class, 'riwayat'])->name('riwayat.index');
+
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Siswa\LaporanBimbinganController::class, 'index'])->name('index');
+        Route::get('/{laporanBimbingan}/download', [App\Http\Controllers\Siswa\LaporanBimbinganController::class, 'download'])->name('download');
+    });
 });
