@@ -33,12 +33,12 @@ class Siswa extends Model
 
     public function permohonanKonseling()
     {
-        return $this->hasMany(PermohonanKonseling::class);
+        return $this->hasMany(PermohonanKonseling::class, 'siswa_id');
     }
 
     public function jadwalKonseling()
     {
-        return $this->hasMany(JadwalKonseling::class);
+        return $this->hasMany(JadwalKonseling::class, 'siswa_id');
     }
 
     public function getFullNameAttribute()

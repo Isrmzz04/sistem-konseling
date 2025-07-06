@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,12 +12,12 @@ class PermohonanKonseling extends Model
 
     protected $fillable = [
         'siswa_id',
-        'guru_bk_id',           // Field untuk siswa memilih guru BK
+        'guru_bk_id',
         'jenis_konseling',
         'topik_konseling',
         'ringkasan_masalah',
         'status',
-        'diproses_oleh',        // Field untuk tracking siapa yang memproses
+        'diproses_oleh',
         'catatan_guru_bk',
         'diproses_at'
     ];
@@ -27,6 +26,7 @@ class PermohonanKonseling extends Model
         'diproses_at' => 'datetime',
     ];
 
+    // Existing relationships
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
@@ -37,6 +37,7 @@ class PermohonanKonseling extends Model
         return $this->belongsTo(GuruBK::class, 'guru_bk_id');
     }
 
+    // PASTIKAN RELATIONSHIP INI ADA:
     public function diprosesoleh()
     {
         return $this->belongsTo(GuruBK::class, 'diproses_oleh');
@@ -47,6 +48,7 @@ class PermohonanKonseling extends Model
         return $this->hasMany(JadwalKonseling::class);
     }
 
+    // Methods
     public function isMenunggu()
     {
         return $this->status === 'menunggu';

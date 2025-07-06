@@ -56,22 +56,22 @@ Route::middleware(['auth', 'role:administrator'])->prefix('administrator')->name
         Route::delete('/siswa/{siswa}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
     });
 
-    Route::get('/konseling', function () {
-        return view('administrator.konseling.index');
-    })->name('konseling.index');
-    Route::get('/konseling/pending', function () {
-        return view('administrator.konseling.requests');
-    })->name('konseling.pending');
-    Route::get('/konseling/active', function () {
-        return view('administrator.konseling.index');
-    })->name('konseling.active');
+    Route::prefix('konseling')->name('konseling.')->group(function () {
+        Route::get('/permohonan', [App\Http\Controllers\Administrator\PermohonanKonselingController::class, 'index'])->name('permohonan');
+        Route::get('/permohonan/{permohonanKonseling}', [App\Http\Controllers\Administrator\PermohonanKonselingController::class, 'show'])->name('permohonan.show');
 
-    Route::get('/laporan', function () {
-        return view('administrator.laporan.index');
-    })->name('laporan.index');
-    Route::get('/settings', function () {
-        return view('administrator.settings.index');
-    })->name('settings.index');
+        Route::get('/jadwal', [App\Http\Controllers\Administrator\JadwalKonselingController::class, 'index'])->name('jadwal');
+        Route::get('/jadwal/{jadwalKonseling}', [App\Http\Controllers\Administrator\JadwalKonselingController::class, 'show'])->name('jadwal.show');
+
+        Route::get('/riwayat', [App\Http\Controllers\Administrator\JadwalKonselingController::class, 'riwayat'])->name('riwayat');
+    });
+
+    // Update: Laporan routes
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Administrator\LaporanBimbinganController::class, 'index'])->name('index');
+        Route::get('/{laporanBimbingan}', [App\Http\Controllers\Administrator\LaporanBimbinganController::class, 'show'])->name('show');
+        Route::get('/{laporanBimbingan}/download', [App\Http\Controllers\Administrator\LaporanBimbinganController::class, 'download'])->name('download');
+    });
 });
 
 Route::middleware(['auth', 'role:guru_bk'])->prefix('guru_bk')->name('guru_bk.')->group(function () {
@@ -122,7 +122,7 @@ Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->grou
     });
 
     Route::get('/jadwal', [App\Http\Controllers\Siswa\JadwalKonselingController::class, 'index'])->name('jadwal.index');
-    
+
     Route::get('/riwayat', [App\Http\Controllers\Siswa\JadwalKonselingController::class, 'riwayat'])->name('riwayat.index');
 
     Route::prefix('laporan')->name('laporan.')->group(function () {

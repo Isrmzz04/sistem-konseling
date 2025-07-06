@@ -1,4 +1,5 @@
 <?php
+// Model GuruBK.php - Tambahkan relationship ini
 
 namespace App\Models;
 
@@ -20,7 +21,7 @@ class GuruBK extends Model
         'tanggal_lahir',
         'no_telp',
         'alamat',
-        'is_active',
+        'is_active'
     ];
 
     protected $casts = [
@@ -28,23 +29,38 @@ class GuruBK extends Model
         'is_active' => 'boolean',
     ];
 
+    // Existing relationships
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // public function jadwalKonseling()
-    // {
-    //     return $this->hasMany(JadwalKonseling::class);
-    // }
-
-    public function getFullNameAttribute()
+    // TAMBAHKAN RELATIONSHIPS INI:
+    
+    public function permohonanKonseling()
     {
-        return $this->nama_lengkap . ' (NIP: ' . $this->nip . ')';
+        return $this->hasMany(PermohonanKonseling::class, 'guru_bk_id');
     }
 
-    public function getAgeAttribute()
+    public function jadwalKonseling()
     {
-        return $this->tanggal_lahir ? $this->tanggal_lahir->age : null;
+        return $this->hasMany(JadwalKonseling::class, 'guru_bk_id');
+    }
+
+    public function laporanBimbingan()
+    {
+        return $this->hasManyThrough(LaporanBimbingan::class, JadwalKonseling::class, 'guru_bk_id', 'jadwal_konseling_id');
+    }
+
+    // Methods
+    public function isActive()
+    {
+        return $this->is_active;
+    }
+
+    // Scope untuk filter aktif
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

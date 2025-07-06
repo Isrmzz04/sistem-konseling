@@ -1,101 +1,101 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Administrator;
 
 use App\Http\Controllers\Controller;
 use App\Models\PermohonanKonseling;
+use App\Models\GuruBK;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 
 class PermohonanKonselingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $permohonanKonseling = PermohonanKonseling::with(['siswa.user'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-        
-        return view('administrator.konseling.permohonan.index', compact('permohonanKonseling'));
-    }
+        // Query builder dengan eager loading
+        $query = PermohonanKonseling::with(['siswa.user', 'guruBK.user']);
 
-    public function create()
-    {
-        $siswas = Siswa::with('user')->get();
-        return view('administrator.konseling.permohonan.form', compact('siswas'));
-    }
+        // Filter berdasarkan pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('siswa', function($siswaQuery) use ($search) {
+                    $siswaQuery->where('nama_lengkap', 'like', "%{$search}%")
+                              ->orWhere('nisn', 'like', "%{$search}%")
+                              ->orWhere('kelas', 'like', "%{$search}%")
+                              ->orWhere('jurusan', 'like', "%{$search}%");
+                })->orWhere('topik_konseling', 'like', "%{$search}%")
+                  ->orWhere('ringkasan_masalah', 'like', "%{$search}%");
+            });
+        }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'siswa_id' => 'required|exists:siswas,id',
-            'jenis_konseling' => 'required|in:pribadi,sosial,akademik,karir,lainnya',
-            'topik_konseling' => 'required|string|max:255',
-            'ringkasan_masalah' => 'required|string',
-        ]);
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        PermohonanKonseling::create($request->all());
+        // Filter berdasarkan jenis konseling
+        if ($request->filled('jenis_konseling')) {
+            $query->where('jenis_konseling', $request->jenis_konseling);
+        }
 
-        return redirect()->route('administrator.konseling.permohonan.index')
-            ->with('success', 'Permohonan konseling berhasil ditambahkan.');
+        // Filter berdasarkan guru BK
+        if ($request->filled('guru_bk_id')) {
+            $query->where('guru_bk_id', $request->guru_bk_id);
+        }
+
+        // Filter berdasarkan kelas
+        if ($request->filled('kelas')) {
+            $query->whereHas('siswa', function($siswaQuery) use ($request) {
+                $siswaQuery->where('kelas', $request->kelas);
+            });
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('created_at', '>=', $request->tanggal_mulai);
+        }
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('created_at', '<=', $request->tanggal_selesai);
+        }
+
+        $permohonanKonseling = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Data untuk filter dropdown
+        $guruBKList = GuruBK::with('user')->where('is_active', true)->orderBy('nama_lengkap')->get();
+        $kelasList = Siswa::distinct()->orderBy('kelas')->pluck('kelas');
+
+        // Statistik untuk dashboard
+        $statistik = [
+            'total' => PermohonanKonseling::count(),
+            'menunggu' => PermohonanKonseling::where('status', 'menunggu')->count(),
+            'disetujui' => PermohonanKonseling::where('status', 'disetujui')->count(),
+            'ditolak' => PermohonanKonseling::where('status', 'ditolak')->count(),
+            'selesai' => PermohonanKonseling::where('status', 'selesai')->count(),
+        ];
+
+        return view('administrator.konseling.permohonan', compact(
+            'permohonanKonseling', 
+            'guruBKList', 
+            'kelasList', 
+            'statistik'
+        ));
     }
 
     public function show(PermohonanKonseling $permohonanKonseling)
     {
-        $permohonanKonseling->load(['siswa.user']);
-        return response()->json($permohonanKonseling);
-    }
-
-    public function edit(PermohonanKonseling $permohonanKonseling)
-    {
-        $permohonanKonseling->load(['siswa.user']);
-        $siswas = Siswa::with('user')->get();
-        return view('administrator.konseling.permohonan.form', compact('permohonanKonseling', 'siswas'));
-    }
-
-    public function update(Request $request, PermohonanKonseling $permohonanKonseling)
-    {
-        $request->validate([
-            'siswa_id' => 'required|exists:siswas,id',
-            'jenis_konseling' => 'required|in:pribadi,sosial,akademik,karir,lainnya',
-            'topik_konseling' => 'required|string|max:255',
-            'ringkasan_masalah' => 'required|string',
-            'status' => 'required|in:menunggu,disetujui,ditolak,selesai',
+        $permohonanKonseling->load([
+            'siswa.user', 
+            'guruBK.user', 
+            'diprosesoleh.user',
+            'jadwalKonseling.laporanBimbingan'
         ]);
 
-        $permohonanKonseling->update($request->all());
+        // Format response agar konsisten dengan JavaScript
+        $response = $permohonanKonseling->toArray();
+        $response['guru_bk'] = $permohonanKonseling->guruBK;
+        $response['jadwal_konseling'] = $permohonanKonseling->jadwalKonseling;
 
-        return redirect()->route('administrator.konseling.permohonan.index')
-            ->with('success', 'Permohonan konseling berhasil diperbarui.');
-    }
-
-    public function destroy(PermohonanKonseling $permohonanKonseling)
-    {
-        try {
-            $permohonanKonseling->delete();
-            
-            return redirect()->route('administrator.konseling.permohonan.index')
-                ->with('success', 'Permohonan konseling berhasil dihapus.');
-                
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan saat menghapus data.');
-        }
-    }
-
-    public function updateStatus(Request $request, PermohonanKonseling $permohonanKonseling)
-    {
-        $request->validate([
-            'status' => 'required|in:disetujui,ditolak',
-            'catatan' => 'nullable|string'
-        ]);
-
-        $permohonanKonseling->update([
-            'status' => $request->status,
-            'catatan_admin' => $request->catatan
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status permohonan berhasil diperbarui.'
-        ]);
+        return response()->json($response);
     }
 }
