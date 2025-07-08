@@ -179,13 +179,7 @@
                                     <a href="{{ route('guru_bk.jadwal.create', ['permohonan' => $permohonan->id]) }}" 
                                        class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-medium"
                                        title="Buat Jadwal">
-                                        <i class="fas fa-calendar-plus mr-1"></i>Jadwal
-                                    </a>
-                                @else
-                                    <a href="{{ route('guru_bk.jadwal.show', $permohonan->jadwalKonseling->first()) }}" 
-                                       class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium"
-                                       title="Lihat Jadwal">
-                                        <i class="fas fa-calendar-alt mr-1"></i>Lihat
+                                        <i class="fas fa-calendar-plus mr-1"></i>Jadwalkan
                                     </a>
                                 @endif
                             @endif
