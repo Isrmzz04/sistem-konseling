@@ -5,11 +5,13 @@ namespace App\Http\Controllers\GuruBK;
 use App\Http\Controllers\Controller;
 use App\Models\LaporanBimbingan;
 use App\Models\JadwalKonseling;
+use App\Traits\SendsWhatsAppNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LaporanBimbinganController extends Controller
 {
+    use SendsWhatsAppNotifications;
     public function index()
     {
         $guruBK = auth()->user()->guruBK;
@@ -111,10 +113,12 @@ class LaporanBimbinganController extends Controller
         
         $filePath = $file->storeAs('laporan', $fileName);
 
-        LaporanBimbingan::create([
+        $laporanBimbingan = LaporanBimbingan::create([
             'jadwal_konseling_id' => $request->jadwal_konseling_id,
             'dokumen_laporan' => $filePath,
         ]);
+
+        $this->sendWhatsAppNotification($laporanBimbingan, 'laporan_ready');
 
         return redirect()->route('guru_bk.laporan.index')
             ->with('success', 'Laporan bimbingan berhasil diupload dan dapat diakses oleh siswa.');

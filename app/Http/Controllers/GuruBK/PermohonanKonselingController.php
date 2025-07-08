@@ -4,10 +4,13 @@ namespace App\Http\Controllers\GuruBK;
 
 use App\Http\Controllers\Controller;
 use App\Models\PermohonanKonseling;
+use App\Traits\SendsWhatsAppNotifications;
 use Illuminate\Http\Request;
 
 class PermohonanKonselingController extends Controller
 {
+    use SendsWhatsAppNotifications;
+
     public function index(Request $request)
     {
         $guruBK = auth()->user()->guruBK;
@@ -125,6 +128,8 @@ class PermohonanKonselingController extends Controller
             'diproses_oleh' => $guruBK->id,
             'diproses_at' => now()
         ]);
+
+        $this->sendWhatsAppNotification($permohonanKonseling, 'status_updated');
 
         $statusText = $request->status === 'disetujui' ? 'disetujui' : 'ditolak';
 

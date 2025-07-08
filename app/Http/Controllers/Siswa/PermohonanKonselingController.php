@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\PermohonanKonseling;
 use App\Models\GuruBK;
+use App\Traits\SendsWhatsAppNotifications;
 use Illuminate\Http\Request;
 
 class PermohonanKonselingController extends Controller
 {
+    use SendsWhatsAppNotifications;
     public function index()
     {
         $siswa = auth()->user()->siswa;
@@ -81,7 +83,7 @@ class PermohonanKonselingController extends Controller
             'ringkasan_masalah' => 'required|string|min:50',
         ]);
 
-        PermohonanKonseling::create([
+        $permohonanKonseling = PermohonanKonseling::create([
             'siswa_id' => $siswa->id,
             'guru_bk_id' => $request->guru_bk_id,
             'jenis_konseling' => $request->jenis_konseling,
@@ -89,6 +91,8 @@ class PermohonanKonselingController extends Controller
             'ringkasan_masalah' => $request->ringkasan_masalah,
             'status' => 'menunggu'
         ]);
+
+        $this->sendWhatsAppNotification($permohonanKonseling, 'permohonan_masuk');
 
         return redirect()->route('siswa.permohonan.index')
             ->with('success', 'Permohonan konseling berhasil diajukan. Silakan tunggu konfirmasi dari guru BK.');

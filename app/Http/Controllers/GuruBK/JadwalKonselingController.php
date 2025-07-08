@@ -5,10 +5,12 @@ namespace App\Http\Controllers\GuruBK;
 use App\Http\Controllers\Controller;
 use App\Models\JadwalKonseling;
 use App\Models\PermohonanKonseling;
+use App\Traits\SendsWhatsAppNotifications;
 use Illuminate\Http\Request;
 
 class JadwalKonselingController extends Controller
 {
+    use SendsWhatsAppNotifications;
     public function index(Request $request)
     {
         $guruBK = auth()->user()->guruBK;
@@ -130,7 +132,7 @@ class JadwalKonselingController extends Controller
             return back()->with('error', 'Jadwal bentrok dengan jadwal konseling lain pada tanggal dan jam yang sama.');
         }
 
-        JadwalKonseling::create([
+        $jadwalKonseling = JadwalKonseling::create([
             'permohonan_konseling_id' => $request->permohonan_konseling_id,
             'guru_bk_id' => $guruBK->id,
             'siswa_id' => $permohonan->siswa_id,
@@ -141,6 +143,8 @@ class JadwalKonselingController extends Controller
             'status' => 'dijadwalkan',
             'catatan' => $request->catatan,
         ]);
+
+        $this->sendWhatsAppNotification($jadwalKonseling, 'jadwal_created');
 
         return redirect()->route('guru_bk.jadwal.index')
             ->with('success', 'Jadwal konseling berhasil dibuat. Siswa akan mendapat notifikasi.');
@@ -290,6 +294,10 @@ class JadwalKonselingController extends Controller
         }
 
         $jadwalKonseling->update($updateData);
+
+        if ($newStatus === 'dibatalkan') {
+            $this->sendWhatsAppNotification($jadwalKonseling, 'jadwal_dibatalkan');
+        }
 
         if ($newStatus === 'selesai') {
             $jadwalKonseling->permohonanKonseling->update(['status' => 'selesai']);
