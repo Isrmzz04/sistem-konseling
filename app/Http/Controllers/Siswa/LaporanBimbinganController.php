@@ -16,7 +16,6 @@ class LaporanBimbinganController extends Controller
                 ->with('error', 'Profil siswa belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Ambil laporan bimbingan untuk siswa yang login
         $laporanBimbingan = LaporanBimbingan::with([
                 'jadwalKonseling.permohonanKonseling', 
                 'jadwalKonseling.guruBK'
@@ -34,7 +33,6 @@ class LaporanBimbinganController extends Controller
     {
         $siswa = auth()->user()->siswa;
         
-        // Pastikan siswa hanya bisa download laporan miliknya
         if ($laporanBimbingan->jadwalKonseling->siswa_id !== $siswa->id) {
             abort(403);
         }

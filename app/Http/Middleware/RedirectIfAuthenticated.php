@@ -22,7 +22,6 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // Get user and redirect to appropriate dashboard
                 $user = User::find(Auth::id());
                 return redirect()->route($user->getDashboardRoute());
             }

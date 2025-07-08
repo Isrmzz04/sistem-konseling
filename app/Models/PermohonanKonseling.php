@@ -1,12 +1,14 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PermohonanKonseling extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'permohonan_konseling';
 
@@ -26,7 +28,6 @@ class PermohonanKonseling extends Model
         'diproses_at' => 'datetime',
     ];
 
-    // Existing relationships
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
@@ -37,7 +38,6 @@ class PermohonanKonseling extends Model
         return $this->belongsTo(GuruBK::class, 'guru_bk_id');
     }
 
-    // PASTIKAN RELATIONSHIP INI ADA:
     public function diprosesoleh()
     {
         return $this->belongsTo(GuruBK::class, 'diproses_oleh');
@@ -48,7 +48,6 @@ class PermohonanKonseling extends Model
         return $this->hasMany(JadwalKonseling::class);
     }
 
-    // Methods
     public function isMenunggu()
     {
         return $this->status === 'menunggu';
@@ -69,7 +68,6 @@ class PermohonanKonseling extends Model
         return $this->status === 'selesai';
     }
 
-    // Scope untuk filter
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
@@ -85,7 +83,6 @@ class PermohonanKonseling extends Model
         return $query->where('siswa_id', $siswaId);
     }
 
-    // Accessor untuk status dengan warna
     public function getStatusColorAttribute()
     {
         return match ($this->status) {
@@ -97,7 +94,6 @@ class PermohonanKonseling extends Model
         };
     }
 
-    // Accessor untuk jenis konseling dengan warna
     public function getJenisColorAttribute()
     {
         return match ($this->jenis_konseling) {

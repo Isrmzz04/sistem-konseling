@@ -18,7 +18,6 @@
         </div>
     </div>
 
-    <!-- Filter -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <form method="GET" class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-64">
@@ -50,11 +49,32 @@
         </form>
     </div>
 
-    <!-- Tabel Permohonan -->
+    @if(request('search') || request('status'))
+        <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-blue-700">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>
+                        Menampilkan {{ $permohonanKonseling->count() }} dari {{ $permohonanKonseling->total() }} hasil
+                        @if(request('search'))
+                            untuk pencarian "<strong>{{ request('search') }}</strong>"
+                        @endif
+                        @if(request('status'))
+                            dengan status "<strong>{{ ucfirst(request('status')) }}</strong>"
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        No
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Siswa
                     </th>
@@ -73,8 +93,11 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($permohonanKonseling as $permohonan)
+                @forelse($permohonanKonseling as $index => $permohonan)
                 <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ $permohonanKonseling->firstItem() + $index }}
+                    </td>
                     <td class="px-6 py-4">
                         <div>
                             <div class="text-sm font-medium text-gray-900">
@@ -119,9 +142,15 @@
                             {{ ucfirst($permohonan->status) }}
                         </span>
                         @if($permohonan->status === 'disetujui')
-                            <div class="text-xs text-green-600 mt-1">
-                                <i class="fas fa-check mr-1"></i>Siap dijadwalkan
-                            </div>
+                            @if($permohonan->jadwalKonseling && $permohonan->jadwalKonseling->isNotEmpty())
+                                <div class="text-xs text-blue-600 mt-1">
+                                    <i class="fas fa-calendar-check mr-1"></i>Sudah dijadwalkan
+                                </div>
+                            @else
+                                <div class="text-xs text-green-600 mt-1">
+                                    <i class="fas fa-check mr-1"></i>Siap dijadwalkan
+                                </div>
+                            @endif
                         @endif
                     </td>
                     <td class="px-6 py-4 text-sm font-medium">
@@ -146,21 +175,35 @@
                             @endif
                             
                             @if($permohonan->status === 'disetujui')
-                                <a href="{{ route('guru_bk.jadwal.create', ['permohonan' => $permohonan->id]) }}" 
-                                   class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-medium"
-                                   title="Buat Jadwal">
-                                    <i class="fas fa-calendar-plus mr-1"></i>Jadwal
-                                </a>
+                                @if(!$permohonan->jadwalKonseling || $permohonan->jadwalKonseling->isEmpty())
+                                    <a href="{{ route('guru_bk.jadwal.create', ['permohonan' => $permohonan->id]) }}" 
+                                       class="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs font-medium"
+                                       title="Buat Jadwal">
+                                        <i class="fas fa-calendar-plus mr-1"></i>Jadwal
+                                    </a>
+                                @else
+                                    <a href="{{ route('guru_bk.jadwal.show', $permohonan->jadwalKonseling->first()) }}" 
+                                       class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium"
+                                       title="Lihat Jadwal">
+                                        <i class="fas fa-calendar-alt mr-1"></i>Lihat
+                                    </a>
+                                @endif
                             @endif
                         </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
                         <div class="text-lg font-medium">Tidak ada permohonan masuk</div>
-                        <div class="mt-2 text-sm">Semua permohonan sudah diproses</div>
+                        <div class="mt-2 text-sm">
+                            @if(request('search') || request('status'))
+                                Tidak ada permohonan yang sesuai dengan filter yang dipilih
+                            @else
+                                Semua permohonan sudah diproses
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforelse
@@ -168,16 +211,49 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     @if($permohonanKonseling->hasPages())
-    <div class="px-6 py-4 border-t border-gray-200">
-        {{ $permohonanKonseling->links() }}
+    <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Menampilkan {{ $permohonanKonseling->firstItem() }} sampai {{ $permohonanKonseling->lastItem() }} dari {{ $permohonanKonseling->total() }} hasil
+            </div>
+            <div class="flex items-center space-x-2">
+                <nav class="flex items-center space-x-1">
+                    @if ($permohonanKonseling->onFirstPage())
+                        <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    @else
+                        <a href="{{ $permohonanKonseling->previousPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    @endif
+
+                    @foreach ($permohonanKonseling->getUrlRange(1, $permohonanKonseling->lastPage()) as $page => $url)
+                        @if ($page == $permohonanKonseling->currentPage())
+                            <span class="px-3 py-2 text-sm font-medium text-white bg-gray-600 rounded-md">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($permohonanKonseling->hasMorePages())
+                        <a href="{{ $permohonanKonseling->nextPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    @endif
+                </nav>
+            </div>
+        </div>
     </div>
     @endif
 </div>
 
-<!-- Modal Detail Permohonan -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6 border-b border-gray-200">
@@ -189,14 +265,12 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Approval -->
-<div id="approvalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="approvalModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="p-6 border-b border-gray-200">
@@ -217,7 +291,6 @@
                         Batal
                     </button>
                     <button type="submit" id="approvalSubmit" class="px-4 py-2 rounded-md text-sm text-white">
-                        <!-- Color will be set by JavaScript -->
                     </button>
                 </div>
             </form>
@@ -281,21 +354,18 @@ function showDetail(permohonanId) {
 function processPermohonan(permohonanId, action) {
     const actionText = action === 'disetujui' ? 'menyetujui' : 'menolak';
     
-    // Konfirmasi action
     if (!confirm(`Apakah Anda yakin ingin ${actionText} permohonan ini?`)) {
         return;
     }
     
-    // Jika tolak, minta catatan
     let catatan = null;
     if (action === 'ditolak') {
         catatan = prompt('Masukkan alasan penolakan (opsional):');
-        if (catatan === null) { // User cancel
+        if (catatan === null) {
             return;
         }
     }
     
-    // Submit
     const formData = new FormData();
     formData.append('status', action);
     if (catatan) {
@@ -375,7 +445,6 @@ document.getElementById('approvalForm').addEventListener('submit', function(e) {
     });
 });
 
-// Close modals when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

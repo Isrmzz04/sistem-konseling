@@ -17,7 +17,6 @@
         </div>
     </div>
 
-    <!-- Informasi Ringkas -->
     <div class="p-6 border-b border-gray-200 bg-blue-50">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="text-center">
@@ -35,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Daftar Jadwal -->
     <div class="divide-y divide-gray-200">
         @forelse($jadwalKonseling as $jadwal)
         <div class="p-6 hover:bg-gray-50">
@@ -87,7 +85,6 @@
                     </div>
                     @endif
 
-                    <!-- Alert untuk jadwal mendekati -->
                     @if($jadwal->status === 'dijadwalkan' && $jadwal->tanggal_konseling->isToday())
                     <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                         <div class="flex items-center">
@@ -134,8 +131,7 @@
     </div>
 </div>
 
-<!-- Modal Detail Jadwal -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6 border-b border-gray-200">
@@ -147,7 +143,6 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
@@ -233,7 +228,6 @@ function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
 }
 
-// Close modal when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

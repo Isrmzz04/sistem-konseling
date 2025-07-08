@@ -16,7 +16,6 @@ class JadwalKonselingController extends Controller
                 ->with('error', 'Profil siswa belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Ambil jadwal konseling siswa yang masih aktif (belum selesai)
         $jadwalKonseling = JadwalKonseling::with([
                 'permohonanKonseling',
                 'guruBK.user'
@@ -25,7 +24,7 @@ class JadwalKonselingController extends Controller
             ->whereIn('status', ['dijadwalkan', 'berlangsung'])
             ->orderBy('tanggal_konseling', 'asc')
             ->orderBy('jam_mulai', 'asc')
-            ->get(); // Ubah ke get() agar bisa menggunakan collection methods
+            ->get();
         
         return view('siswa.jadwal.index', compact('jadwalKonseling'));
     }
@@ -39,15 +38,14 @@ class JadwalKonselingController extends Controller
                 ->with('error', 'Profil siswa belum dilengkapi.');
         }
 
-        // Ambil riwayat konseling siswa (semua status) dengan eager loading yang lebih robust
         $riwayatKonseling = JadwalKonseling::with([
                 'permohonanKonseling',
                 'guruBK.user',
                 'laporanBimbingan'
             ])
             ->where('siswa_id', $siswa->id)
-            ->whereHas('guruBK') // Pastikan ada guru BK
-            ->whereHas('permohonanKonseling') // Pastikan ada permohonan
+            ->whereHas('guruBK')
+            ->whereHas('permohonanKonseling')
             ->orderBy('tanggal_konseling', 'desc')
             ->paginate(10);
         

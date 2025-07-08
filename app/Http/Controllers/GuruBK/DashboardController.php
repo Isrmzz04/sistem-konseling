@@ -19,10 +19,8 @@ class DashboardController extends Controller
                 ->with('error', 'Profil Guru BK belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Statistics Cards
         $statistics = $this->getStatistics($guruBK);
         
-        // Quick Tables
         $permohonanPending = $this->getPermohonanPending($guruBK);
         $jadwalHariIni = $this->getJadwalHariIni($guruBK);
         
@@ -38,17 +36,14 @@ class DashboardController extends Controller
         $today = Carbon::today();
 
         return [
-            // Permohonan pending yang perlu diproses
             'permohonan_pending' => PermohonanKonseling::where('guru_bk_id', $guruBK->id)
                 ->where('status', 'menunggu')
                 ->count(),
             
-            // Jadwal konseling hari ini
             'jadwal_hari_ini' => JadwalKonseling::where('guru_bk_id', $guruBK->id)
                 ->whereDate('tanggal_konseling', $today)
                 ->count(),
             
-            // Konseling selesai tanpa laporan
             'selesai_tanpa_laporan' => JadwalKonseling::where('guru_bk_id', $guruBK->id)
                 ->where('status', 'selesai')
                 ->whereDoesntHave('laporanBimbingan')

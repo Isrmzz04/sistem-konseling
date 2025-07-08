@@ -12,7 +12,6 @@ class JadwalKonselingController extends Controller
 {
     public function index(Request $request)
     {
-        // Query builder dengan eager loading
         $query = JadwalKonseling::with([
             'permohonanKonseling.siswa.user',
             'siswa.user',
@@ -20,7 +19,6 @@ class JadwalKonselingController extends Controller
             'laporanBimbingan'
         ]);
 
-        // Filter berdasarkan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -36,24 +34,20 @@ class JadwalKonselingController extends Controller
             });
         }
 
-        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan guru BK
         if ($request->filled('guru_bk_id')) {
             $query->where('guru_bk_id', $request->guru_bk_id);
         }
 
-        // Filter berdasarkan kelas
         if ($request->filled('kelas')) {
             $query->whereHas('siswa', function($siswaQuery) use ($request) {
                 $siswaQuery->where('kelas', $request->kelas);
             });
         }
 
-        // Filter berdasarkan tanggal
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('tanggal_konseling', '>=', $request->tanggal_mulai);
         }
@@ -61,20 +55,17 @@ class JadwalKonselingController extends Controller
             $query->whereDate('tanggal_konseling', '<=', $request->tanggal_selesai);
         }
 
-        // Filter berdasarkan hari ini
         if ($request->filled('hari_ini')) {
             $query->whereDate('tanggal_konseling', today());
         }
 
         $jadwalKonseling = $query->orderBy('tanggal_konseling', 'desc')
                                 ->orderBy('jam_mulai', 'desc')
-                                ->paginate(15);
+                                ->paginate(10);
 
-        // Data untuk filter dropdown
         $guruBKList = GuruBK::with('user')->where('is_active', true)->orderBy('nama_lengkap')->get();
         $kelasList = Siswa::distinct()->orderBy('kelas')->pluck('kelas');
 
-        // Statistik untuk dashboard
         $statistik = [
             'total' => JadwalKonseling::count(),
             'dijadwalkan' => JadwalKonseling::where('status', 'dijadwalkan')->count(),
@@ -94,7 +85,6 @@ class JadwalKonselingController extends Controller
 
     public function riwayat(Request $request)
     {
-        // Query builder untuk riwayat (semua jadwal)
         $query = JadwalKonseling::with([
             'permohonanKonseling.siswa.user',
             'siswa.user',
@@ -102,7 +92,6 @@ class JadwalKonselingController extends Controller
             'laporanBimbingan'
         ]);
 
-        // Filter berdasarkan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -118,24 +107,20 @@ class JadwalKonselingController extends Controller
             });
         }
 
-        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan guru BK
         if ($request->filled('guru_bk_id')) {
             $query->where('guru_bk_id', $request->guru_bk_id);
         }
 
-        // Filter berdasarkan kelas
         if ($request->filled('kelas')) {
             $query->whereHas('siswa', function($siswaQuery) use ($request) {
                 $siswaQuery->where('kelas', $request->kelas);
             });
         }
 
-        // Filter berdasarkan periode
         if ($request->filled('periode')) {
             $periode = $request->periode;
             switch ($periode) {
@@ -150,14 +135,11 @@ class JadwalKonselingController extends Controller
                           ->whereYear('tanggal_konseling', now()->year);
                     break;
                 case 'semester_ini':
-                    // Asumsi semester ganjil (Juli-Desember) dan genap (Januari-Juni)
                     $currentMonth = now()->month;
                     if ($currentMonth >= 7) {
-                        // Semester ganjil
                         $query->whereMonth('tanggal_konseling', '>=', 7)
                               ->whereYear('tanggal_konseling', now()->year);
                     } else {
-                        // Semester genap
                         $query->whereMonth('tanggal_konseling', '<=', 6)
                               ->whereYear('tanggal_konseling', now()->year);
                     }
@@ -168,7 +150,6 @@ class JadwalKonselingController extends Controller
             }
         }
 
-        // Filter berdasarkan tanggal custom
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('tanggal_konseling', '>=', $request->tanggal_mulai);
         }
@@ -178,13 +159,12 @@ class JadwalKonselingController extends Controller
 
         $riwayatKonseling = $query->orderBy('tanggal_konseling', 'desc')
                                  ->orderBy('jam_mulai', 'desc')
-                                 ->paginate(15);
+                                 ->paginate(10)
+                                 ->withQueryString();
 
-        // Data untuk filter dropdown
         $guruBKList = GuruBK::with('user')->where('is_active', true)->orderBy('nama_lengkap')->get();
         $kelasList = Siswa::distinct()->orderBy('kelas')->pluck('kelas');
 
-        // Statistik riwayat
         $statistikRiwayat = [
             'total_konseling' => JadwalKonseling::count(),
             'total_selesai' => JadwalKonseling::where('status', 'selesai')->count(),
@@ -212,7 +192,6 @@ class JadwalKonselingController extends Controller
             'laporanBimbingan'
         ]);
 
-        // Format response agar konsisten dengan JavaScript
         $response = $jadwalKonseling->toArray();
         $response['guru_bk'] = $jadwalKonseling->guruBK;
         $response['permohonan_konseling'] = $jadwalKonseling->permohonanKonseling;

@@ -19,7 +19,6 @@ class LaporanBimbinganController extends Controller
                 ->with('error', 'Profil Guru BK belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Ambil jadwal yang sudah selesai tapi belum ada laporannya
         $jadwalPerluLaporan = JadwalKonseling::with(['permohonanKonseling.siswa.user', 'siswa.user'])
             ->where('guru_bk_id', $guruBK->id)
             ->where('status', 'selesai')
@@ -27,20 +26,18 @@ class LaporanBimbinganController extends Controller
             ->orderBy('tanggal_konseling', 'desc')
             ->get();
 
-        // Ambil laporan yang sudah dibuat
         $laporanBimbingan = LaporanBimbingan::with(['jadwalKonseling.permohonanKonseling.siswa.user', 'jadwalKonseling.siswa.user'])
             ->whereHas('jadwalKonseling', function($query) use ($guruBK) {
                 $query->where('guru_bk_id', $guruBK->id);
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(10);
         
         return view('guru_bk.laporan.index', compact('jadwalPerluLaporan', 'laporanBimbingan'));
     }
 
     public function downloadTemplate()
     {
-        // Path ke template Word yang sudah disiapkan
         $templatePath = resource_path('templates/template_laporan_bimbingan.docx');
         
         if (!file_exists($templatePath)) {
@@ -54,18 +51,15 @@ class LaporanBimbinganController extends Controller
     {
         $guruBK = auth()->user()->guruBK;
         
-        // Pastikan guru BK hanya bisa membuat laporan untuk jadwal yang ditanganinya
         if ($jadwalKonseling->guru_bk_id !== $guruBK->id) {
             abort(403);
         }
 
-        // Pastikan jadwal sudah selesai
         if ($jadwalKonseling->status !== 'selesai') {
             return redirect()->route('guru_bk.laporan.index')
                 ->with('error', 'Laporan hanya dapat dibuat untuk jadwal konseling yang sudah selesai.');
         }
 
-        // Pastikan belum ada laporan
         if ($jadwalKonseling->laporanBimbingan) {
             return redirect()->route('guru_bk.laporan.index')
                 ->with('error', 'Laporan untuk jadwal konseling ini sudah dibuat.');
@@ -87,10 +81,9 @@ class LaporanBimbinganController extends Controller
 
         $request->validate([
             'jadwal_konseling_id' => 'required|exists:jadwal_konseling,id',
-            'dokumen_laporan' => 'required|file|mimes:doc,docx,pdf|max:10240', // 10MB max
+            'dokumen_laporan' => 'required|file|mimes:doc,docx,pdf|max:10240',
         ]);
 
-        // Verifikasi jadwal konseling
         $jadwalKonseling = JadwalKonseling::find($request->jadwal_konseling_id);
         
         if ($jadwalKonseling->guru_bk_id !== $guruBK->id) {
@@ -105,21 +98,17 @@ class LaporanBimbinganController extends Controller
             return back()->with('error', 'Laporan untuk jadwal konseling ini sudah dibuat.');
         }
 
-        // Upload file laporan dengan format nama yang baru
         $file = $request->file('dokumen_laporan');
         
-        // Format nama: namalengkap_kelas_jurusan_tanggalkonseling
         $siswa = $jadwalKonseling->siswa;
         $tanggalKonseling = $jadwalKonseling->tanggal_konseling->format('Y-m-d');
         
-        // Bersihkan nama untuk file system (hapus karakter khusus)
         $namaLengkap = str_replace([' ', '.', ',', '/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $siswa->nama_lengkap);
         $kelas = str_replace([' ', '.', ',', '/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $siswa->kelas);
         $jurusan = str_replace([' ', '.', ',', '/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $siswa->jurusan);
         
         $fileName = $namaLengkap . '_' . $kelas . '_' . $jurusan . '_' . $tanggalKonseling . '.' . $file->getClientOriginalExtension();
         
-        // Simpan ke storage/app/laporan
         $filePath = $file->storeAs('laporan', $fileName);
 
         LaporanBimbingan::create([
@@ -135,7 +124,6 @@ class LaporanBimbinganController extends Controller
     {
         $guruBK = auth()->user()->guruBK;
         
-        // Pastikan guru BK hanya bisa melihat laporan yang dibuat olehnya
         if ($laporanBimbingan->jadwalKonseling->guru_bk_id !== $guruBK->id) {
             abort(403);
         }
@@ -149,7 +137,6 @@ class LaporanBimbinganController extends Controller
     {
         $guruBK = auth()->user()->guruBK;
         
-        // Pastikan guru BK hanya bisa download laporan yang dibuat olehnya
         if ($laporanBimbingan->jadwalKonseling->guru_bk_id !== $guruBK->id) {
             abort(403);
         }
@@ -165,13 +152,11 @@ class LaporanBimbinganController extends Controller
     {
         $guruBK = auth()->user()->guruBK;
         
-        // Pastikan guru BK hanya bisa hapus laporan yang dibuat olehnya
         if ($laporanBimbingan->jadwalKonseling->guru_bk_id !== $guruBK->id) {
             abort(403);
         }
 
         try {
-            // Hapus file dari storage
             if (Storage::exists($laporanBimbingan->dokumen_laporan)) {
                 Storage::delete($laporanBimbingan->dokumen_laporan);
             }

@@ -31,7 +31,6 @@
             @endif
 
             @if(!isset($jadwalKonseling))
-            <!-- Pilih Permohonan (Hanya untuk Create) -->
             <div>
                 <label for="permohonan_konseling_id" class="block text-sm font-medium text-gray-700 mb-2">
                     Pilih Permohonan Konseling <span class="text-red-500">*</span>
@@ -58,7 +57,6 @@
                 @enderror
             </div>
 
-            <!-- Detail Permohonan (Tampil saat pilih permohonan) -->
             <div id="detailPermohonan" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 class="font-medium text-blue-900 mb-3">Detail Permohonan</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -85,7 +83,6 @@
                 </div>
             </div>
             @else
-            <!-- Info Permohonan (Untuk Edit) -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 class="font-medium text-gray-900 mb-3">Detail Permohonan</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -109,9 +106,7 @@
             </div>
             @endif
 
-            <!-- Form Jadwal -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Tanggal Konseling -->
                 <div>
                     <label for="tanggal_konseling" class="block text-sm font-medium text-gray-700 mb-2">
                         Tanggal Konseling <span class="text-red-500">*</span>
@@ -128,7 +123,6 @@
                     @enderror
                 </div>
 
-                <!-- Tempat -->
                 <div>
                     <label for="tempat" class="block text-sm font-medium text-gray-700 mb-2">
                         Tempat Konseling <span class="text-red-500">*</span>
@@ -145,7 +139,6 @@
                     @enderror
                 </div>
 
-                <!-- Jam Mulai -->
                 <div>
                     <label for="jam_mulai" class="block text-sm font-medium text-gray-700 mb-2">
                         Jam Mulai <span class="text-red-500">*</span>
@@ -161,7 +154,6 @@
                     @enderror
                 </div>
 
-                <!-- Jam Selesai -->
                 <div>
                     <label for="jam_selesai" class="block text-sm font-medium text-gray-700 mb-2">
                         Jam Selesai <span class="text-red-500">*</span>
@@ -178,7 +170,6 @@
                 </div>
             </div>
 
-            <!-- Catatan -->
             <div>
                 <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
                     Catatan Tambahan
@@ -193,7 +184,6 @@
                 @enderror
             </div>
 
-            <!-- Submit Buttons -->
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('guru_bk.jadwal.index') }}" 
                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-md text-sm font-medium">
@@ -211,7 +201,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     @if(!isset($jadwalKonseling))
-    // Show detail permohonan when selected
     const permohonanSelect = document.getElementById('permohonan_konseling_id');
     const detailDiv = document.getElementById('detailPermohonan');
     
@@ -231,13 +220,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Trigger change event if there's an old value
     if (permohonanSelect.value) {
         permohonanSelect.dispatchEvent(new Event('change'));
     }
     @endif
 
-    // Validate jam selesai > jam mulai
     const jamMulai = document.getElementById('jam_mulai');
     const jamSelesai = document.getElementById('jam_selesai');
     
@@ -254,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
     jamMulai.addEventListener('change', validateTime);
     jamSelesai.addEventListener('change', validateTime);
     
-    // Auto-set jam selesai (1 jam setelah jam mulai)
     jamMulai.addEventListener('change', function() {
         if (this.value && !jamSelesai.value) {
             const [hours, minutes] = this.value.split(':');

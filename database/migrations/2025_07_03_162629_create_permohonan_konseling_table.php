@@ -26,6 +26,7 @@ return new class extends Migration
             $table->timestamp('diproses_at')->nullable();
             
             $table->timestamps();
+            $table->softDeletes();
             
             // Indexes
             $table->index(['siswa_id', 'status']);

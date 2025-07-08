@@ -4,7 +4,6 @@
 
 @section('main-content')
 <div class="bg-white rounded-lg shadow-sm">
-    <!-- Header -->
     <div class="p-6 border-b border-gray-200">
         <div class="flex justify-between items-center">
             <div>
@@ -19,7 +18,6 @@
         </div>
     </div>
 
-    <!-- Statistik Cards -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-white p-4 rounded-lg border">
@@ -45,7 +43,6 @@
         </div>
     </div>
 
-    <!-- Filter -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
             <div>
@@ -115,11 +112,35 @@
         </form>
     </div>
 
-    <!-- Tabel Permohonan -->
+    @if(request('search') || request('status') || request('jenis_konseling') || request('guru_bk_id') || request('kelas'))
+        <div class="px-6 py-3 bg-blue-50 border-b border-blue-100">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-blue-700">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>
+                        Menampilkan {{ $permohonanKonseling->count() }} dari {{ $permohonanKonseling->total() }} hasil
+                        @if(request('search'))
+                            untuk pencarian "<strong>{{ request('search') }}</strong>"
+                        @endif
+                        @if(request('status'))
+                            dengan status "<strong>{{ ucfirst(request('status')) }}</strong>"
+                        @endif
+                        @if(request('jenis_konseling'))
+                            jenis "<strong>{{ ucfirst(request('jenis_konseling')) }}</strong>"
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        No
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Siswa
                     </th>
@@ -141,8 +162,11 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($permohonanKonseling as $permohonan)
+                @forelse($permohonanKonseling as $index => $permohonan)
                 <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ $permohonanKonseling->firstItem() + $index }}
+                    </td>
                     <td class="px-6 py-4">
                         <div>
                             <div class="text-sm font-medium text-gray-900">
@@ -204,19 +228,26 @@
                     <td class="px-6 py-4 text-sm font-medium">
                         <div class="flex items-center space-x-2">
                             <button onclick="showDetail({{ $permohonan->id }})" 
-                                    class="text-blue-600 hover:text-blue-900 p-2 rounded border border-blue-200 hover:bg-blue-50"
+                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-xs font-medium transition-colors duration-200"
                                     title="Lihat Detail">
-                                <i class="fas fa-eye text-sm"></i>
+                                <i class="fas fa-eye mr-1"></i>
+                                Detail
                             </button>
                         </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
                         <div class="text-lg font-medium">Tidak ada permohonan konseling</div>
-                        <div class="mt-2 text-sm">Belum ada permohonan yang sesuai dengan filter</div>
+                        <div class="mt-2 text-sm">
+                            @if(request('search') || request('status') || request('jenis_konseling') || request('guru_bk_id') || request('kelas'))
+                                Tidak ada permohonan yang sesuai dengan filter yang dipilih
+                            @else
+                                Belum ada permohonan konseling yang masuk
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @endforelse
@@ -224,16 +255,49 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     @if($permohonanKonseling->hasPages())
-    <div class="px-6 py-4 border-t border-gray-200">
-        {{ $permohonanKonseling->links() }}
-    </div>
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Menampilkan {{ $permohonanKonseling->firstItem() }} sampai {{ $permohonanKonseling->lastItem() }} dari {{ $permohonanKonseling->total() }} hasil
+                </div>
+                <div class="flex items-center space-x-2">
+                    <nav class="flex items-center space-x-1">
+                        @if ($permohonanKonseling->onFirstPage())
+                            <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+                        @else
+                            <a href="{{ $permohonanKonseling->previousPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        @endif
+
+                        @foreach ($permohonanKonseling->getUrlRange(1, $permohonanKonseling->lastPage()) as $page => $url)
+                            @if ($page == $permohonanKonseling->currentPage())
+                                <span class="px-3 py-2 text-sm font-medium text-white bg-gray-600 rounded-md">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if ($permohonanKonseling->hasMorePages())
+                            <a href="{{ $permohonanKonseling->nextPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        @else
+                            <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-md cursor-not-allowed">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        @endif
+                    </nav>
+                </div>
+            </div>
+        </div>
     @endif
 </div>
 
-<!-- Modal Detail Permohonan -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full" style="height: 60vh; max-height: 60vh;">
             <div class="p-6 border-b border-gray-200 flex-shrink-0">
@@ -247,7 +311,6 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6 overflow-y-auto" style="height: calc(60vh - 80px);">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
@@ -263,9 +326,8 @@ function showDetail(permohonanId) {
             return response.json();
         })
         .then(data => {
-            console.log('Data received:', data); // Debug log
+            console.log('Data received:', data)
             
-            // Pastikan data ada
             if (!data.siswa || !data.guru_bk) {
                 throw new Error('Data tidak lengkap');
             }
@@ -424,7 +486,6 @@ function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
 }
 
-// Close modal when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

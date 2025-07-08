@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('jadwal_konseling_id')->constrained('jadwal_konseling')->onDelete('cascade');
             $table->string('dokumen_laporan');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -17,7 +17,6 @@
         </div>
     </div>
 
-    <!-- Info Konseling -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <h3 class="text-sm font-medium text-gray-900 mb-3">Detail Konseling</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -52,7 +51,6 @@
         </div>
     </div>
 
-    <!-- Download Template Section -->
     <div class="p-6 border-b border-gray-200 bg-blue-50">
         <div class="flex items-center justify-between">
             <div>
@@ -75,7 +73,6 @@
             
             <input type="hidden" name="jadwal_konseling_id" value="{{ $jadwalKonseling->id }}">
 
-            <!-- Upload File -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Upload File Laporan <span class="text-red-500">*</span>
@@ -114,7 +111,6 @@
                 @enderror
             </div>
 
-            <!-- Catatan -->
             <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
@@ -135,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Submit Buttons -->
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
                 <a href="{{ route('guru_bk.laporan.index') }}" 
                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-md text-sm font-medium">
@@ -156,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewContainer = document.getElementById('preview-container');
     const dropZone = document.querySelector('.border-dashed');
 
-    // Handle file input change
     fileInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -164,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle drag and drop
     dropZone.addEventListener('dragover', function(e) {
         e.preventDefault();
         this.classList.add('border-blue-400', 'bg-blue-50');
@@ -183,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (files.length > 0) {
             const file = files[0];
             
-            // Validate file type
             const allowedTypes = ['.doc', '.docx', '.pdf'];
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
             
@@ -192,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Validate file size (10MB)
             if (file.size > 10 * 1024 * 1024) {
                 alert('Ukuran file terlalu besar. Maksimal 10MB.');
                 return;
@@ -204,7 +195,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function showFilePreview(file) {
-        // Validate file type
         const allowedTypes = ['.doc', '.docx', '.pdf'];
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         
@@ -214,14 +204,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate file size (10MB)
         if (file.size > 10 * 1024 * 1024) {
             alert('Ukuran file terlalu besar. Maksimal 10MB.');
             fileInput.value = '';
             return;
         }
         
-        // Show preview
         const fileName = document.getElementById('file-name');
         const fileSize = document.getElementById('file-size');
         const fileIcon = document.getElementById('file-icon');
@@ -229,7 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fileName.textContent = file.name;
         fileSize.textContent = formatFileSize(file.size);
         
-        // Set icon based on file type
         if (fileExtension === '.pdf') {
             fileIcon.className = 'fas fa-file-pdf text-red-600 text-2xl mr-3';
         } else {
@@ -252,7 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
         previewContainer.classList.add('hidden');
     }
 
-    // Form validation
     document.querySelector('form').addEventListener('submit', function(e) {
         if (!fileInput.files.length) {
             e.preventDefault();

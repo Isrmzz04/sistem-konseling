@@ -15,13 +15,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Statistics Cards
         $statistics = $this->getStatistics();
         
-        // Recent Activities
         $recentActivities = $this->getRecentActivities();
         
-        // Quick Tables
         $pendingPermohonan = $this->getPendingPermohonan();
         $jadwalHariIni = $this->getJadwalHariIni();
         
@@ -40,28 +37,13 @@ class DashboardController extends Controller
         $thisMonth = Carbon::now()->startOfMonth();
 
         return [
-            // Permohonan hari ini
             'permohonan_hari_ini' => PermohonanKonseling::whereDate('created_at', $today)->count(),
-            
-            // Permohonan minggu ini  
-            'permohonan_minggu_ini' => PermohonanKonseling::where('created_at', '>=', $thisWeek)->count(),
-            
-            // Konseling berlangsung saat ini
-            'konseling_berlangsung' => JadwalKonseling::where('status', 'berlangsung')->count(),
-            
-            // Jadwal hari ini
-            'jadwal_hari_ini' => JadwalKonseling::whereDate('tanggal_konseling', $today)->count(),
-            
-            // Total permohonan pending
-            'permohonan_pending' => PermohonanKonseling::where('status', 'menunggu')->count(),
-            
-            // Tingkat penyelesaian bulan ini (%)
-            'tingkat_penyelesaian' => $this->getTingkatPenyelesaian($thisMonth),
-            
-            // Guru BK paling aktif bulan ini
-            'guru_bk_aktif' => $this->getGuruBKAktif($thisMonth),
-            
-            // Rata-rata waktu response (hari)
+            'permohonan_minggu_ini' => PermohonanKonseling::where('created_at', '>=', $thisWeek)->count(),            
+            'konseling_berlangsung' => JadwalKonseling::where('status', 'berlangsung')->count(),            
+            'jadwal_hari_ini' => JadwalKonseling::whereDate('tanggal_konseling', $today)->count(),            
+            'permohonan_pending' => PermohonanKonseling::where('status', 'menunggu')->count(),            
+            'tingkat_penyelesaian' => $this->getTingkatPenyelesaian($thisMonth),            
+            'guru_bk_aktif' => $this->getGuruBKAktif($thisMonth),            
             'rata_response' => $this->getRataResponse(),
         ];
     }
@@ -104,7 +86,6 @@ class DashboardController extends Controller
     {
         $activities = collect();
 
-        // Recent Permohonan (3 hari terakhir)
         $recentPermohonan = PermohonanKonseling::with(['siswa', 'guruBK'])
             ->where('created_at', '>=', Carbon::now()->subDays(3))
             ->get()
@@ -120,7 +101,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent Status Changes (3 hari terakhir)
         $recentStatusChanges = PermohonanKonseling::with(['siswa', 'diprosesoleh'])
             ->whereNotNull('diproses_at')
             ->where('diproses_at', '>=', Carbon::now()->subDays(3))
@@ -142,7 +122,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent Jadwal (3 hari terakhir)
         $recentJadwal = JadwalKonseling::with(['siswa', 'guruBK'])
             ->where('created_at', '>=', Carbon::now()->subDays(3))
             ->get()
@@ -158,7 +137,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent Konseling Selesai (3 hari terakhir)
         $recentSelesai = JadwalKonseling::with(['siswa', 'guruBK'])
             ->where('status', 'selesai')
             ->where('updated_at', '>=', Carbon::now()->subDays(3))
@@ -175,7 +153,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent Laporan (3 hari terakhir)
         $recentLaporan = LaporanBimbingan::with(['jadwalKonseling.siswa', 'jadwalKonseling.guruBK'])
             ->where('created_at', '>=', Carbon::now()->subDays(3))
             ->get()
@@ -191,7 +168,6 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Combine dan sort by time
         $activities = $activities
             ->concat($recentPermohonan)
             ->concat($recentStatusChanges)

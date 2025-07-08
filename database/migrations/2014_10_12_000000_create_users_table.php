@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('role', ['administrator', 'guru_bk', 'siswa']);
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

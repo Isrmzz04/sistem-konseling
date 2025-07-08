@@ -13,7 +13,6 @@
         </div>
     </div>
 
-    <!-- Info Section -->
     <div class="p-6 border-b border-gray-200 bg-blue-50">
         <div class="flex">
             <div class="flex-shrink-0">
@@ -29,7 +28,6 @@
         </div>
     </div>
 
-    <!-- Statistik Ringkas -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="text-center">
@@ -51,7 +49,6 @@
         </div>
     </div>
 
-    <!-- Daftar Laporan -->
     <div class="divide-y divide-gray-200">
         @forelse($laporanBimbingan as $laporan)
         <div class="p-6 hover:bg-gray-50">
@@ -131,7 +128,6 @@
         @endforelse
     </div>
 
-    <!-- Pagination -->
     @if($laporanBimbingan->hasPages())
     <div class="px-6 py-4 border-t border-gray-200">
         {{ $laporanBimbingan->links() }}

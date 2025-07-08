@@ -13,7 +13,6 @@
         </div>
     </div>
 
-    <!-- Statistik Ringkas -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="text-center">
@@ -35,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Filter -->
     <div class="p-6 border-b border-gray-200">
         <form method="GET" class="flex flex-wrap gap-4 items-end">
             <div class="min-w-40">
@@ -68,11 +66,9 @@
         </form>
     </div>
 
-    <!-- Timeline Riwayat -->
     <div class="p-6">
         @forelse($riwayatKonseling as $riwayat)
         <div class="relative pl-8 pb-8 @if(!$loop->last) border-l-2 border-gray-200 @endif">
-            <!-- Timeline dot -->
             <div class="absolute left-0 -ml-2 mt-2">
                 @php
                     $dotColors = [
@@ -85,7 +81,6 @@
                 <div class="w-4 h-4 {{ $dotColors[$riwayat->status] ?? 'bg-gray-500' }} rounded-full border-2 border-white shadow"></div>
             </div>
             
-            <!-- Content -->
             <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <div class="flex items-start justify-between mb-4">
                     <div>
@@ -159,7 +154,6 @@
                 </div>
                 @endif
                 
-                <!-- Laporan Bimbingan -->
                 @if($riwayat->laporanBimbingan)
                 <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
                     <div class="flex items-center justify-between">
@@ -178,10 +172,6 @@
                     <div class="text-xs text-gray-500">
                         Dibuat {{ $riwayat->created_at->diffForHumans() }}
                     </div>
-                    <button onclick="showDetail({{ $riwayat->id }})" 
-                            class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                        <i class="fas fa-eye mr-1"></i>Detail
-                    </button>
                 </div>
             </div>
         </div>
@@ -198,7 +188,6 @@
         @endforelse
     </div>
 
-    <!-- Pagination -->
     @if($riwayatKonseling->hasPages())
     <div class="px-6 py-4 border-t border-gray-200">
         {{ $riwayatKonseling->links() }}
@@ -206,8 +195,7 @@
     @endif
 </div>
 
-<!-- Modal Detail Riwayat -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
             <div class="p-6 border-b border-gray-200">
@@ -219,14 +207,12 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Preview Foto -->
-<div id="imageModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden z-50">
+<div id="imageModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="relative max-w-4xl max-h-full">
             <button onclick="closeImageModal()" 
@@ -357,7 +343,6 @@ function closeImageModal() {
     document.getElementById('imageModal').classList.add('hidden');
 }
 
-// Close modal when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

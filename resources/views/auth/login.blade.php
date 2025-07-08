@@ -3,69 +3,52 @@
 @section('title', 'Login')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <div class="mx-auto h-12 w-auto flex justify-center">
-                <img class="h-12 w-auto" src="{{ asset('images/logo-sekolah.png') }}" alt="Logo Sekolah">
+    <div class="min-h-screen flex items-center justify-center bg-[#f8f9fc] px-4">
+        <div class="bg-white p-10 rounded-3xl shadow-md max-w-sm w-full space-y-8 text-center">
+            <div class="flex justify-center">
+                <img src="{{ asset('images/logo-sekolah.png') }}" alt="Logo Sekolah"
+                    class="w-24 h-24 object-cover rounded-md" />
             </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-red-500">
-                Sistem Konseling Siswa
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Masuk ke akun Anda
-            </p>
-        </div>
-
-        <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
-            @csrf
-            
-            <div class="space-y-4">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                    <input id="username" name="username" type="text" autocomplete="username" required 
-                           class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm @error('username') border-red-500 @enderror"
-                           placeholder="Masukkan username Anda" value="{{ old('username') }}">
-                    @error('username')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required 
-                           class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm @error('password') border-red-500 @enderror"
-                           placeholder="Masukkan password Anda">
-                    @error('password')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex items-center">
-                    <input id="remember" name="remember" type="checkbox" 
-                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-900">
-                        Ingat saya
-                    </label>
-                </div>
-            </div>
-
             <div>
-                <button type="submit" 
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Masuk
-                </button>
+                <h2 class="text-2xl font-bold text-gray-900">Login</h2>
+                <p class="mt-1 text-sm text-gray-400">Aplikasi Layanan Konseling Siswa</p>
             </div>
 
-            <div class="text-center">
-                <p class="text-sm text-gray-600">
-                    Belum punya akun? 
-                    <a href="{{ route('register') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                        Daftar di sini
-                    </a>
-                </p>
-            </div>
-        </form>
+            <form action="{{ route('login') }}" method="POST" class="space-y-5">
+                @csrf
+
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <i class='bx bx-user text-lg'></i>
+                    </span>
+                    <input id="username" name="username" type="text" required value="{{ old('username') }}"
+                        class="w-full pl-10 pr-4 py-2 rounded-xl bg-blue-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 @error('username') border-red-500 @enderror"
+                        placeholder="Username" />
+                </div>
+
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <i class='bx bx-lock-alt text-lg'></i>
+                    </span>
+                    <input id="password" name="password" type="password" required
+                        class="w-full pl-10 pr-4 py-2 rounded-xl bg-blue-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 @error('password') border-red-500 @enderror"
+                        placeholder="********" />
+                </div>
+
+                <div>
+                    @error('username')
+                        <p class="text-left text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                    @error('password')
+                        <p class="text-left text-sm text-red-600 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-black text-white font-semibold py-2 rounded-full shadow-lg hover:bg-gray-800 transition cursor-pointer">
+                    Login
+                </button>
+            </form>
+        </div>
     </div>
-</div>
 @endsection

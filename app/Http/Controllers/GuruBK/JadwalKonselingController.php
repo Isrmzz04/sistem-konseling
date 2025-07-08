@@ -18,7 +18,6 @@ class JadwalKonselingController extends Controller
                 ->with('error', 'Profil Guru BK belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Query builder dengan filter
         $query = JadwalKonseling::with([
                 'permohonanKonseling.siswa.user',
                 'siswa.user',
@@ -26,7 +25,6 @@ class JadwalKonselingController extends Controller
             ])
             ->where('guru_bk_id', $guruBK->id);
 
-        // Filter berdasarkan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('siswa', function($q) use ($search) {
@@ -36,21 +34,18 @@ class JadwalKonselingController extends Controller
             });
         }
 
-        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan tanggal
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal_konseling', $request->tanggal);
         }
 
         $jadwalKonseling = $query->orderBy('tanggal_konseling', 'desc')
             ->orderBy('jam_mulai', 'desc')
-            ->paginate(15);
+            ->paginate(10);
 
-        // Cek apakah ada jadwal yang sedang berlangsung
         $hasActiveBimbingan = JadwalKonseling::where('guru_bk_id', $guruBK->id)
             ->where('status', 'berlangsung')
             ->exists();
@@ -67,13 +62,11 @@ class JadwalKonselingController extends Controller
                 ->with('error', 'Profil Guru BK belum dilengkapi.');
         }
 
-        // Jika ada parameter permohonan dari URL
         $selectedPermohonanId = $request->get('permohonan');
 
-        // Ambil permohonan yang sudah disetujui tapi belum dijadwalkan
         $permohonanDisetujui = PermohonanKonseling::with(['siswa.user'])
             ->where('status', 'disetujui')
-            ->whereDoesntHave('jadwalKonseling') // Belum ada jadwal
+            ->whereDoesntHave('jadwalKonseling')
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -82,7 +75,6 @@ class JadwalKonselingController extends Controller
                 ->with('warning', 'Tidak ada permohonan konseling yang perlu dijadwalkan.');
         }
 
-        // Jika ada parameter permohonan, pastikan valid
         if ($selectedPermohonanId) {
             $selectedPermohonan = $permohonanDisetujui->find($selectedPermohonanId);
             if (!$selectedPermohonan) {
@@ -112,7 +104,6 @@ class JadwalKonselingController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        // Cek apakah permohonan masih disetujui dan belum dijadwalkan
         $permohonan = PermohonanKonseling::find($request->permohonan_konseling_id);
         
         if ($permohonan->status !== 'disetujui') {
@@ -123,7 +114,6 @@ class JadwalKonselingController extends Controller
             return back()->with('error', 'Permohonan konseling sudah dijadwalkan.');
         }
 
-        // Cek bentrok jadwal guru BK
         $bentrokJadwal = JadwalKonseling::where('guru_bk_id', $guruBK->id)
             ->where('tanggal_konseling', $request->tanggal_konseling)
             ->where('status', '!=', 'dibatalkan')
@@ -158,7 +148,6 @@ class JadwalKonselingController extends Controller
 
     public function show(JadwalKonseling $jadwalKonseling)
     {
-        // Pastikan guru BK hanya bisa melihat jadwal yang ditanganinya
         if ($jadwalKonseling->guru_bk_id !== auth()->user()->guruBK->id) {
             abort(403);
         }
@@ -174,7 +163,6 @@ class JadwalKonselingController extends Controller
 
     public function edit(JadwalKonseling $jadwalKonseling)
     {
-        // Pastikan guru BK hanya bisa edit jadwal yang ditanganinya dan belum selesai
         if ($jadwalKonseling->guru_bk_id !== auth()->user()->guruBK->id) {
             abort(403);
         }
@@ -184,13 +172,11 @@ class JadwalKonselingController extends Controller
                 ->with('error', 'Jadwal konseling yang sudah selesai atau dibatalkan tidak dapat diubah.');
         }
 
-        // Untuk edit, tidak perlu dropdown permohonan karena sudah terikat
         return view('guru_bk.jadwal.form', compact('jadwalKonseling'));
     }
 
     public function update(Request $request, JadwalKonseling $jadwalKonseling)
     {
-        // Pastikan guru BK hanya bisa edit jadwal yang ditanganinya
         if ($jadwalKonseling->guru_bk_id !== auth()->user()->guruBK->id) {
             abort(403);
         }
@@ -207,7 +193,6 @@ class JadwalKonselingController extends Controller
             'catatan' => 'nullable|string',
         ]);
 
-        // Cek bentrok jadwal (exclude jadwal yang sedang diedit)
         $bentrokJadwal = JadwalKonseling::where('guru_bk_id', auth()->user()->guruBK->id)
             ->where('id', '!=', $jadwalKonseling->id)
             ->where('tanggal_konseling', $request->tanggal_konseling)
@@ -235,7 +220,6 @@ class JadwalKonselingController extends Controller
 
     public function destroy(JadwalKonseling $jadwalKonseling)
     {
-        // Pastikan guru BK hanya bisa hapus jadwal yang ditanganinya
         if ($jadwalKonseling->guru_bk_id !== auth()->user()->guruBK->id) {
             abort(403);
         }
@@ -257,7 +241,6 @@ class JadwalKonselingController extends Controller
 
     public function updateStatus(Request $request, JadwalKonseling $jadwalKonseling)
     {
-        // Pastikan guru BK hanya bisa update status jadwal yang ditanganinya
         if ($jadwalKonseling->guru_bk_id !== auth()->user()->guruBK->id) {
             abort(403);
         }
@@ -265,19 +248,17 @@ class JadwalKonselingController extends Controller
         $request->validate([
             'status' => 'required|in:berlangsung,selesai,dibatalkan',
             'catatan' => 'nullable|string',
-            'dokumentasi_foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120' // 5MB max
+            'dokumentasi_foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
         ]);
 
-        // Logic status transition
         $currentStatus = $jadwalKonseling->status;
         $newStatus = $request->status;
 
-        // Validasi transisi status yang diperbolehkan
         $allowedTransitions = [
             'dijadwalkan' => ['berlangsung', 'dibatalkan'],
             'berlangsung' => ['selesai', 'dibatalkan'],
-            'selesai' => [], // Tidak bisa diubah lagi
-            'dibatalkan' => [] // Tidak bisa diubah lagi
+            'selesai' => [],
+            'dibatalkan' => []
         ];
 
         if (!in_array($newStatus, $allowedTransitions[$currentStatus] ?? [])) {
@@ -289,7 +270,6 @@ class JadwalKonselingController extends Controller
 
         $updateData = ['status' => $newStatus];
         
-        // Jika status selesai, wajib upload foto dokumentasi
         if ($newStatus === 'selesai') {
             if (!$request->hasFile('dokumentasi_foto')) {
                 return response()->json([
@@ -298,23 +278,19 @@ class JadwalKonselingController extends Controller
                 ], 422);
             }
             
-            // Upload foto dokumentasi
             $file = $request->file('dokumentasi_foto');
             $fileName = 'dokumentasi_' . $jadwalKonseling->id . '_' . time() . '.' . $file->getClientOriginalExtension();
             
-            // Simpan ke storage/app/public/dokumentasi
             $filePath = $file->storeAs('dokumentasi', $fileName, 'public');
             $updateData['dokumentasi'] = '/storage/' . $filePath;
         }
         
-        // Update catatan jika ada
         if ($request->filled('catatan')) {
             $updateData['catatan'] = $request->catatan;
         }
 
         $jadwalKonseling->update($updateData);
 
-        // Jika selesai, update status permohonan menjadi selesai
         if ($newStatus === 'selesai') {
             $jadwalKonseling->permohonanKonseling->update(['status' => 'selesai']);
         }

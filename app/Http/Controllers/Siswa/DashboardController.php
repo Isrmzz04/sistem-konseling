@@ -18,13 +18,10 @@ class DashboardController extends Controller
                 ->with('error', 'Profil siswa belum dilengkapi. Silakan hubungi administrator.');
         }
 
-        // Current Status
         $currentStatus = $this->getCurrentStatus($siswa);
         
-        // Riwayat Konseling
         $riwayatKonseling = $this->getRiwayatKonseling($siswa);
         
-        // Laporan Tersedia
         $laporanTersedia = $this->getLaporanTersedia($siswa);
         
         return view('siswa.dashboard', compact(
@@ -36,24 +33,54 @@ class DashboardController extends Controller
 
     private function getCurrentStatus($siswa)
     {
-        // Cek permohonan aktif (menunggu atau disetujui)
-        $permohonanAktif = PermohonanKonseling::with(['guruBK'])
+        $permohonanMenunggu = PermohonanKonseling::with(['guruBK'])
             ->where('siswa_id', $siswa->id)
-            ->whereIn('status', ['menunggu', 'disetujui'])
+            ->where('status', 'menunggu')
             ->first();
 
-        // Cek jadwal konseling mendatang
+        $permohonanDisetujui = PermohonanKonseling::with(['guruBK'])
+            ->where('siswa_id', $siswa->id)
+            ->where('status', 'disetujui')
+            ->whereDoesntHave('jadwalKonseling', function($query) {
+                $query->whereIn('status', ['dijadwalkan', 'berlangsung']);
+            })
+            ->first();
+
         $jadwalMendatang = JadwalKonseling::with(['guruBK', 'permohonanKonseling'])
             ->where('siswa_id', $siswa->id)
             ->whereIn('status', ['dijadwalkan', 'berlangsung'])
             ->orderBy('tanggal_konseling', 'asc')
             ->first();
 
-        return [
-            'permohonan_aktif' => $permohonanAktif,
-            'jadwal_mendatang' => $jadwalMendatang,
-            'can_create_new' => !$permohonanAktif && !$jadwalMendatang
-        ];
+        if ($jadwalMendatang) {
+            return [
+                'permohonan_aktif' => null,
+                'permohonan_disetujui' => null,
+                'jadwal_mendatang' => $jadwalMendatang,
+                'can_create_new' => false
+            ];
+        } elseif ($permohonanMenunggu) {
+            return [
+                'permohonan_aktif' => $permohonanMenunggu,
+                'permohonan_disetujui' => null,
+                'jadwal_mendatang' => null,
+                'can_create_new' => false
+            ];
+        } elseif ($permohonanDisetujui) {
+            return [
+                'permohonan_aktif' => null,
+                'permohonan_disetujui' => $permohonanDisetujui,
+                'jadwal_mendatang' => null,
+                'can_create_new' => false
+            ];
+        } else {
+            return [
+                'permohonan_aktif' => null,
+                'permohonan_disetujui' => null,
+                'jadwal_mendatang' => null,
+                'can_create_new' => true
+            ];
+        }
     }
 
     private function getRiwayatKonseling($siswa)

@@ -1,14 +1,14 @@
 <?php
-// Pastikan di Model JadwalKonseling ada relationship ini:
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JadwalKonseling extends Model
 {
-    use HasFactory;
+    use HasFactory,SoftDeletes;
 
     protected $table = 'jadwal_konseling';
 
@@ -31,7 +31,6 @@ class JadwalKonseling extends Model
         'jam_selesai' => 'datetime:H:i',
     ];
     
-    // PASTIKAN RELATIONSHIP INI ADA DAN BENAR
     public function permohonanKonseling()
     {
         return $this->belongsTo(PermohonanKonseling::class, 'permohonan_konseling_id');
@@ -52,7 +51,6 @@ class JadwalKonseling extends Model
         return $this->hasOne(LaporanBimbingan::class, 'jadwal_konseling_id');
     }
 
-    // Methods
     public function isDijadwalkan()
     {
         return $this->status === 'dijadwalkan';

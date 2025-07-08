@@ -11,13 +11,34 @@ use Illuminate\Support\Facades\DB;
 
 class SiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $siswas = Siswa::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-        
-        return view('administrator.users.siswa.index', compact('siswas'));
+        $query = Siswa::with('user');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nisn', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('kelas', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('jurusan')) {
+            $query->where('jurusan', $request->jurusan);
+        }
+
+        if ($request->filled('kelas_filter')) {
+            $query->where('kelas', 'LIKE', "%{$request->kelas_filter}%");
+        }
+
+        $siswas = $query->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        $jurusanList = Siswa::distinct()->pluck('jurusan')->filter()->sort();
+
+        return view('administrator.users.siswa.index', compact('siswas', 'jurusanList'));
     }
 
     public function create()
@@ -42,16 +63,14 @@ class SiswaController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
-            // Create user
             $user = User::create([
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
                 'role' => 'siswa',
             ]);
 
-            // Create siswa profile
             Siswa::create([
                 'user_id' => $user->id,
                 'nisn' => $request->nisn,
@@ -66,10 +85,9 @@ class SiswaController extends Controller
             ]);
 
             DB::commit();
-            
+
             return redirect()->route('administrator.users.siswa')
                 ->with('success', 'Data Siswa berhasil ditambahkan.');
-                
         } catch (\Exception $e) {
             DB::rollback();
             return back()->with('error', 'Terjadi kesalahan saat menyimpan data.');
@@ -79,13 +97,11 @@ class SiswaController extends Controller
     public function show(Siswa $siswa)
     {
         $siswa->load('user');
-        
-        // Return JSON untuk AJAX request
+
         if (request()->ajax()) {
             return response()->json($siswa);
         }
-        
-        // Redirect ke index jika bukan AJAX
+
         return redirect()->route('administrator.users.siswa');
     }
 
@@ -117,16 +133,14 @@ class SiswaController extends Controller
         }
 
         DB::beginTransaction();
-        
+
         try {
-            // Update user
             $userData = ['username' => $request->username];
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
             $siswa->user->update($userData);
 
-            // Update siswa profile
             $siswa->update([
                 'nisn' => $request->nisn,
                 'nama_lengkap' => $request->nama_lengkap,
@@ -140,10 +154,9 @@ class SiswaController extends Controller
             ]);
 
             DB::commit();
-            
+
             return redirect()->route('administrator.users.siswa')
                 ->with('success', 'Data Siswa berhasil diperbarui.');
-                
         } catch (\Exception $e) {
             DB::rollback();
             return back()->with('error', 'Terjadi kesalahan saat memperbarui data.');
@@ -153,11 +166,10 @@ class SiswaController extends Controller
     public function destroy(Siswa $siswa)
     {
         try {
-            $siswa->user->delete(); // Akan menghapus siswa juga karena cascade
-            
+            $siswa->user->delete();
+
             return redirect()->route('administrator.users.siswa')
                 ->with('success', 'Data Siswa berhasil dihapus.');
-                
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat menghapus data.');
         }

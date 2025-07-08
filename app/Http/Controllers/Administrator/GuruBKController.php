@@ -11,11 +11,26 @@ use Illuminate\Support\Facades\DB;
 
 class GuruBKController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $guruBKs = GuruBK::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = GuruBK::with('user');
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nip', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('status')) {
+            $status = $request->status === 'aktif' ? 1 : 0;
+            $query->where('is_active', $status);
+        }
+        
+        $guruBKs = $query->orderBy('created_at', 'desc')
+                        ->paginate(10)
+                        ->withQueryString();
         
         return view('administrator.users.guru_bk.index', compact('guruBKs'));
     }
@@ -142,6 +157,7 @@ class GuruBKController extends Controller
     {
         try {
             $guruBK->user->delete();
+            $guruBK->delete();
             
             return redirect()->route('administrator.users.guru_bk')
                 ->with('success', 'Data Guru BK berhasil dihapus.');

@@ -17,7 +17,6 @@
         </div>
     </div>
 
-    <!-- Info Alert untuk Bimbingan Aktif -->
     @if($hasActiveBimbingan)
     <div class="p-6 border-b border-gray-200 bg-orange-50">
         <div class="flex">
@@ -34,7 +33,6 @@
     </div>
     @endif
 
-    <!-- Filter dan Search -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <form method="GET" class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-64">
@@ -76,7 +74,6 @@
         </form>
     </div>
 
-    <!-- Tabel Jadwal -->
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -231,7 +228,6 @@
         </table>
     </div>
 
-    <!-- Pagination -->
     @if($jadwalKonseling->hasPages())
     <div class="px-6 py-4 border-t border-gray-200">
         {{ $jadwalKonseling->links() }}
@@ -239,8 +235,7 @@
     @endif
 </div>
 
-<!-- Modal Detail Jadwal -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6 border-b border-gray-200">
@@ -252,14 +247,12 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Selesaikan Konseling -->
-<div id="finishModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="finishModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6 border-b border-gray-200">
@@ -267,7 +260,7 @@
                 <p class="text-sm text-gray-600 mt-1">Upload dokumentasi foto dan catatan hasil bimbingan</p>
             </div>
             <form id="finishForm" enctype="multipart/form-data">
-                <div class="p-6">
+                <div class="p-6 h-[60vh] max-h-[60vh] overflow-y-auto">
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Upload Foto Dokumentasi <span class="text-red-500">*</span>
@@ -410,7 +403,6 @@ function closeFinishModal() {
     currentJadwalId = null;
     document.getElementById('finishForm').reset();
     
-    // Reset preview
     const previewContainer = document.getElementById('preview-container');
     if (previewContainer) {
         previewContainer.classList.add('hidden');
@@ -418,7 +410,6 @@ function closeFinishModal() {
 }
 
 function startBimbingan(jadwalId) {
-    // Double check untuk memastikan tidak ada bimbingan yang sedang berlangsung
     @if($hasActiveBimbingan)
         alert('Tidak dapat memulai bimbingan baru karena ada bimbingan lain yang sedang berlangsung.');
         return;
@@ -477,7 +468,6 @@ document.getElementById('finishForm').addEventListener('submit', function(e) {
     formData.append('_token', '{{ csrf_token() }}');
     formData.append('_method', 'PATCH');
     
-    // Show loading
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
@@ -506,18 +496,15 @@ document.getElementById('finishForm').addEventListener('submit', function(e) {
     });
 });
 
-// Handle file upload preview
 document.getElementById('dokumentasi_foto').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
-        // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert('Ukuran file terlalu besar. Maksimal 5MB.');
             this.value = '';
             return;
         }
         
-        // Validate file type
         if (!file.type.startsWith('image/')) {
             alert('File harus berupa gambar.');
             this.value = '';
@@ -534,7 +521,6 @@ document.getElementById('dokumentasi_foto').addEventListener('change', function(
     }
 });
 
-// Handle drag and drop
 const dropZone = document.querySelector('.border-dashed');
 if (dropZone) {
     dropZone.addEventListener('dragover', function(e) {
@@ -559,7 +545,6 @@ if (dropZone) {
     });
 }
 
-// Close modals when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

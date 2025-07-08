@@ -30,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Info Section untuk Permohonan Aktif -->
     @if($hasActivePermohonan)
     <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
         <div class="flex">
@@ -47,7 +46,6 @@
     </div>
     @endif
 
-    <!-- Statistik Ringkas -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="text-center">
@@ -69,7 +67,6 @@
         </div>
     </div>
 
-    <!-- List Permohonan -->
     <div class="divide-y divide-gray-200">
         @forelse($permohonanKonseling as $permohonan)
         <div class="p-6 hover:bg-gray-50">
@@ -127,7 +124,6 @@
                     </div>
                     @endif
                     
-                    <!-- Status specific messages -->
                     @if($permohonan->status === 'disetujui')
                     <div class="bg-green-50 border border-green-200 rounded-md p-3 mb-4">
                         <div class="flex items-center">
@@ -203,7 +199,6 @@
         @endforelse
     </div>
 
-    <!-- Pagination -->
     @if($permohonanKonseling->hasPages())
     <div class="px-6 py-4 border-t border-gray-200">
         {{ $permohonanKonseling->links() }}
@@ -211,8 +206,7 @@
     @endif
 </div>
 
-<!-- Modal Detail Permohonan -->
-<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="detailModal" class="fixed inset-0 bg-black/50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6 border-b border-gray-200">
@@ -224,7 +218,6 @@
                 </div>
             </div>
             <div id="detailContent" class="p-6">
-                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
@@ -303,7 +296,6 @@ function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
 }
 
-// Close modal when clicking outside
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();

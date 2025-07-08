@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('dokumentasi')->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

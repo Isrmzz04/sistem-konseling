@@ -12,10 +12,8 @@ class PermohonanKonselingController extends Controller
 {
     public function index(Request $request)
     {
-        // Query builder dengan eager loading
         $query = PermohonanKonseling::with(['siswa.user', 'guruBK.user']);
 
-        // Filter berdasarkan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -29,29 +27,24 @@ class PermohonanKonselingController extends Controller
             });
         }
 
-        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan jenis konseling
         if ($request->filled('jenis_konseling')) {
             $query->where('jenis_konseling', $request->jenis_konseling);
         }
 
-        // Filter berdasarkan guru BK
         if ($request->filled('guru_bk_id')) {
             $query->where('guru_bk_id', $request->guru_bk_id);
         }
 
-        // Filter berdasarkan kelas
         if ($request->filled('kelas')) {
             $query->whereHas('siswa', function($siswaQuery) use ($request) {
                 $siswaQuery->where('kelas', $request->kelas);
             });
         }
 
-        // Filter berdasarkan tanggal
         if ($request->filled('tanggal_mulai')) {
             $query->whereDate('created_at', '>=', $request->tanggal_mulai);
         }
@@ -59,13 +52,11 @@ class PermohonanKonselingController extends Controller
             $query->whereDate('created_at', '<=', $request->tanggal_selesai);
         }
 
-        $permohonanKonseling = $query->orderBy('created_at', 'desc')->paginate(15);
+        $permohonanKonseling = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        // Data untuk filter dropdown
         $guruBKList = GuruBK::with('user')->where('is_active', true)->orderBy('nama_lengkap')->get();
         $kelasList = Siswa::distinct()->orderBy('kelas')->pluck('kelas');
 
-        // Statistik untuk dashboard
         $statistik = [
             'total' => PermohonanKonseling::count(),
             'menunggu' => PermohonanKonseling::where('status', 'menunggu')->count(),
@@ -91,7 +82,6 @@ class PermohonanKonselingController extends Controller
             'jadwalKonseling.laporanBimbingan'
         ]);
 
-        // Format response agar konsisten dengan JavaScript
         $response = $permohonanKonseling->toArray();
         $response['guru_bk'] = $permohonanKonseling->guruBK;
         $response['jadwal_konseling'] = $permohonanKonseling->jadwalKonseling;
